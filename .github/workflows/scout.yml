@@ -37,12 +37,18 @@ jobs:
 
       - name: Install Docker Scout
         run: |
-          curl -sSfL https://get.docker.com/rootless | sh
           curl -sSfL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh
-          docker scout --version
+          sudo mv ./bin/docker-scout /usr/local/bin/docker-scout
+          docker-scout version
 
       - name: Run Docker Scout CVE Analysis
         run: |
           echo "🔍 Analizando imagen con Docker Scout..."
-          docker scout cves ${{ env.IMAGE_NAME }}:sha-${{ env.SHA }} --output json > scout-report.json
+          docker-scout cves ${{ env.IMAGE_NAME }}:sha-${{ env.SHA }} --output json > scout-report.json
           cat scout-report.json
+
+      - name: Upload Scout Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: scout-report
+          path: scout-report.json
