@@ -1,20 +1,19 @@
-name: Build, Push and Analyze Docker image
+name: Build and Analyze Docker Image
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
 
 env:
-  IMAGE_NAME: efnaranjo/scout   # 🔑 nombre base sin ":"
+  IMAGE_NAME: efnaranjo/scout
   SHA: ${{ github.sha }}
 
 jobs:
-  build:
+  build-and-analyze:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Log in to Docker Hub
@@ -26,26 +25,24 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and push Docker image
+      - name: Build image and load to runner
+        id: build
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
-          push: true
-          tags: |
-            ${{ env.IMAGE_NAME }}:latest
-            ${{ env.IMAGE_NAME }}:v1-${{ env.SHA }}
+          push: false
+          load: true
+          tags: ${{ env.IMAGE_NAME }}:sha-${{ env.SHA }}
 
-      # 👇 Paso extra: Instalar y ejecutar Docker Scout
-      - name: Install Docker CLI and Scout
+      - name: Install Docker Scout
         run: |
-          curl -fsSL https://get.docker.com -o get-docker.sh
-          sh get-docker.sh
-          docker --version
-          docker scout --version || true
+          curl -sSfL https://get.docker.com/rootless | sh
+          curl -sSfL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh
+          docker scout --version
 
-      - name: Run Docker Scout analysis
+      - name: Run Docker Scout CVE Analysis
         run: |
           echo "🔍 Analizando imagen con Docker Scout..."
-          docker scout quickview ${{ env.IMAGE_NAME }}:latest
-          docker scout cves ${{ env.IMAGE_NAME }}:latest
+          docker scout cves ${{ env.IMAGE_NAME }}:sha-${{ env.SHA }} --output json > scout-report.json
+          cat scout-report.json
