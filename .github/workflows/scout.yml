@@ -1,12 +1,12 @@
-name: Build and Push Docker image
+name: Build, Push and Analyze Docker image
 
 on:
   push:
     branches:
-      - main   # se ejecuta cuando haces push a main
+      - main
 
 env:
-  IMAGE_NAME: efnaranjo/scout   # 🔑 sin ":" aquí
+  IMAGE_NAME: efnaranjo/scout   # 🔑 nombre base sin ":"
   SHA: ${{ github.sha }}
 
 jobs:
@@ -35,3 +35,17 @@ jobs:
           tags: |
             ${{ env.IMAGE_NAME }}:latest
             ${{ env.IMAGE_NAME }}:v1-${{ env.SHA }}
+
+      # 👇 Paso extra: Instalar y ejecutar Docker Scout
+      - name: Install Docker CLI and Scout
+        run: |
+          curl -fsSL https://get.docker.com -o get-docker.sh
+          sh get-docker.sh
+          docker --version
+          docker scout --version || true
+
+      - name: Run Docker Scout analysis
+        run: |
+          echo "🔍 Analizando imagen con Docker Scout..."
+          docker scout quickview ${{ env.IMAGE_NAME }}:latest
+          docker scout cves ${{ env.IMAGE_NAME }}:latest
