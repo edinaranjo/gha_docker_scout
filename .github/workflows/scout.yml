@@ -48,12 +48,13 @@ jobs:
           docker scout cves ${{ env.IMAGE_NAME }}:sha-${{ env.SHA }} \
           --output table --details
 
-      - name: Generate JSON report
+      - name: Generate detailed JSON report
         run: |
           docker scout cves ${{ env.IMAGE_NAME }}:sha-${{ env.SHA }} \
-            --output json --details > scout-report.json
-          cat scout-report.json | jq '. | length'
-            ls -lh scout-report.json
+            --output json --details | tee scout-report.json
+          echo "Contenido del reporte:"
+          cat scout-report.json | jq '.'
+          ls -lh scout-report.json
 
       # 7. Subir reporte como artefacto descargable
       - name: Upload vulnerability report
