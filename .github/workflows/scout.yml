@@ -42,16 +42,18 @@ jobs:
           sudo cp ~/.docker/cli-plugins/docker-scout /usr/local/bin/
           docker-scout version
 
+      # 6. Escanear la imagen con Docker Scout
       - name: Scan image with Docker Scout
         run: |
-          docker scout cves ${{ env.IMAGE_NAME }}:sha-${{ github.sha }} --output json > scout-report.json
-          echo "==== Resumen de vulnerabilidades ===="
+          echo "🔍 Ejecutando análisis de vulnerabilidades con Docker Scout..."
+          docker scout cves ${{ env.IMAGE_NAME }}:sha-${{ github.sha }} --output json 2>&1 | tee scout-report.json
+          echo "==== Resumen de vulnerabilidades detectadas ===="
           cat scout-report.json
-          
 
-      - name: Upload Scout Report
+      # 7. Subir reporte como artefacto en GitHub Actions
+      - name: Upload Scout JSON report
         uses: actions/upload-artifact@v4
         with:
-          name: scout-report
+          name: docker-scout-report
           path: scout-report.json
 
