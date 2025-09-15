@@ -43,19 +43,17 @@ jobs:
           docker-scout version
 
 
-     # 5. Análisis detallado en consola (tabla extendida)
       - name: Run detailed vulnerability scan (table)
         run: |
           docker scout cves ${{ env.IMAGE_NAME }}:sha-${{ env.SHA }} \
-            --format table --details
+          --output table --details
 
-      # 6. Generar reporte detallado en JSON
       - name: Generate JSON report
         run: |
           docker scout cves ${{ env.IMAGE_NAME }}:sha-${{ env.SHA }} \
-            --format json --details > scout-report.json
+            --output json --details > scout-report.json
           cat scout-report.json | jq '. | length'
-          ls -lh scout-report.json
+            ls -lh scout-report.json
 
       # 7. Subir reporte como artefacto descargable
       - name: Upload vulnerability report
