@@ -5,7 +5,7 @@ on:
     branches: [ "main" ]
 
 env:
-  IMAGE_NAME: my-dockerhub-user/myapp
+  IMAGE_NAME: efnaranjo/scout
   SHA: ${{ github.sha }}
 
 jobs:
