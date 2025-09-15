@@ -43,7 +43,7 @@ jobs:
           docker-scout version
 
 
-# 5. Análisis detallado con salida en consola
+      # 5. Análisis detallado con salida en consola
       - name: Run detailed vulnerability scan (table)
         run: |
           docker scout cves ${{ env.IMAGE_NAME }}:sha-${{ env.SHA }} \
